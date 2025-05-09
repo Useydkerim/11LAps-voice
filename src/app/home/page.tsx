@@ -1,12 +1,31 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AuthForm from '@/components/AuthForm';
 
 export default function HomePage() {
   const router = useRouter();
   const [showAuth, setShowAuth] = useState(false);
+  // Consent state
+  const [consentGiven, setConsentGiven] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const consent = localStorage.getItem('voiceai_consent');
+      if (consent === 'true') {
+        setConsentGiven(true);
+      }
+    }
+  }, []);
+
+  const handleConsent = () => {
+    setConsentGiven(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('voiceai_consent', 'true');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 via-purple-100 to-white">
       {/* Header */}
@@ -99,6 +118,21 @@ export default function HomePage() {
       <footer className="w-full py-6 px-8 bg-white/80 text-center text-gray-500 text-sm mt-8 border-t">
         &copy; {new Date().getFullYear()} VoiceAI. All rights reserved. &middot; <a href="/about" className="hover:text-purple-600 underline">About</a>
       </footer>
+      {/* Consent Banner */}
+      {!consentGiven && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-[95vw] bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl flex items-center gap-4 px-6 py-4 border border-purple-200 animate-fade-in">
+          <span className="text-2xl text-purple-500">🛡️</span>
+          <div className="flex-1 text-gray-800 text-sm md:text-base">
+            We use cookies and process voice data to enhance your experience. By continuing, you agree to our <a href="/about" className="underline text-purple-600 hover:text-blue-600">privacy policy</a>.
+          </div>
+          <button
+            className="ml-2 px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold shadow hover:from-blue-500 hover:to-purple-500 transition"
+            onClick={handleConsent}
+          >
+            Accept
+          </button>
+        </div>
+      )}
     </div>
   );
 } 

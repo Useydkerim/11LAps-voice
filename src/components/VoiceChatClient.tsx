@@ -1,12 +1,7 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState, useRef } from "react";
-import dynamic from 'next/dynamic';
-
-// ElevenLabs
 import { useConversation } from "@11labs/react";
-
-// UI
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mic, MicOff, Volume2, VolumeX } from "lucide-react";
@@ -18,18 +13,51 @@ interface Message {
   timestamp: Date;
 }
 
-const N8N_WEBHOOK_URL = "https://poligoninteractive.app.n8n.cloud/webhook-test/data";
+const N8N_WEBHOOK_URL = "https://poligoninteractive.app.n8n.cloud/webhook/data";
 
-const VoiceChat = () => {
+export default function VoiceChatClient() {
   const [hasPermission, setHasPermission] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isClient, setIsClient] = useState(false);
   const conversationStartTime = useRef<Date | null>(null);
 
+  const conversation = useConversation({
+    onConnect: () => {
+      console.log("Connected to ElevenLabs");
+    },
+    onDisconnect: () => {
+      console.log("Disconnected from ElevenLabs");
+    },
+    onMessage: (message: { message: string; source: string }) => {
+      console.log("Received message:", message);
+      const newMessage = {
+        text: message.message,
+        isUser: message.source === "user",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, newMessage]);
+    },
+    onError: (error: string | Error) => {
+      setErrorMessage(typeof error === "string" ? error : error.message);
+      console.error("Error:", error);
+    },
+  });
+
+  const { status, isSpeaking } = conversation;
+
   useEffect(() => {
-    setIsClient(true);
+    const requestMicPermission = async () => {
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        setHasPermission(true);
+      } catch (error) {
+        setErrorMessage("Microphone access denied");
+        console.error("Error accessing microphone:", error);
+      }
+    };
+
+    requestMicPermission();
   }, []);
 
   const sendToN8N = async () => {
@@ -68,55 +96,14 @@ const VoiceChat = () => {
     }
   };
 
-  const conversation = useConversation({
-    onConnect: () => {
-      console.log("Connected to ElevenLabs");
-    },
-    onDisconnect: () => {
-      console.log("Disconnected from ElevenLabs");
-    },
-    onMessage: (message: { message: string; source: string }) => {
-      console.log("Received message:", message);
-      const newMessage = {
-        text: message.message,
-        isUser: message.source === "user",
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, newMessage]);
-    },
-    onError: (error: string | Error) => {
-      setErrorMessage(typeof error === "string" ? error : error.message);
-      console.error("Error:", error);
-    },
-  });
-
-  const { status, isSpeaking } = conversation;
-
-  useEffect(() => {
-    if (!isClient) return;
-    
-    // Request microphone permission on component mount
-    const requestMicPermission = async () => {
-      try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        setHasPermission(true);
-      } catch (error) {
-        setErrorMessage("Microphone access denied");
-        console.error("Error accessing microphone:", error);
-      }
-    };
-
-    requestMicPermission();
-  }, [isClient]);
-
   const handleStartConversation = async () => {
     try {
       const conversationId = await conversation.startSession({
         agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
       });
       console.log("Started conversation:", conversationId);
-      setMessages([]); // Clear messages when starting new conversation
-      conversationStartTime.current = new Date(); // Set conversation start time
+      setMessages([]);
+      conversationStartTime.current = new Date();
     } catch (error) {
       setErrorMessage("Failed to start conversation");
       console.error("Error starting conversation:", error);
@@ -126,11 +113,10 @@ const VoiceChat = () => {
   const handleEndConversation = async () => {
     try {
       await conversation.endSession();
-      // Send conversation data to n8n after ending the conversation
       if (messages.length > 0) {
         await sendToN8N();
       }
-      conversationStartTime.current = null; // Reset conversation start time
+      conversationStartTime.current = null;
     } catch (error) {
       setErrorMessage("Failed to end conversation");
       console.error("Error ending conversation:", error);
@@ -146,10 +132,6 @@ const VoiceChat = () => {
       console.error("Error changing volume:", error);
     }
   };
-
-  if (!isClient) {
-    return null; // Don't render anything on the server
-  }
 
   return (
     <>
@@ -176,14 +158,25 @@ const VoiceChat = () => {
         <CardContent>
           <div className="space-y-4">
             <div className="flex justify-center">
-              <Button
-                variant="destructive"
-                onClick={handleEndConversation}
-                className="w-full"
-              >
-                <MicOff className="mr-2 h-4 w-4" />
-                End Conversation
-              </Button>
+              {status === "connected" ? (
+                <Button
+                  variant="destructive"
+                  onClick={handleEndConversation}
+                  className="w-full"
+                >
+                  <MicOff className="mr-2 h-4 w-4" />
+                  End Conversation
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleStartConversation}
+                  disabled={!hasPermission}
+                  className="w-full"
+                >
+                  <Mic className="mr-2 h-4 w-4" />
+                  Start Conversation
+                </Button>
+              )}
             </div>
 
             <div className="text-center text-sm">
@@ -205,6 +198,4 @@ const VoiceChat = () => {
       {messages.length > 0 && <ConversationHistory messages={messages} />}
     </>
   );
-};
-
-export default VoiceChat;
+} 

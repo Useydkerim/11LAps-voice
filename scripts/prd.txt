@@ -1,0 +1,71 @@
+<context>
+# Overview  
+A web application that enables real-time voice chat and user management. The app provides a landing page, user authentication (email and Google via Firebase), personal user profiles, and a main voice chat interface. It is designed for users who want to interact via voice in real time, with secure and personalized experiences.
+
+# Core Features  
+- **Landing Page**: The first page users see, introducing the app and prompting login/sign-up.
+- **User Authentication**: Users can sign up, log in, and log out using email/password or Google accounts via Firebase Authentication.
+- **User SQL Database on Firebase**: Each user has a personal SQL-like database (using Firebase's database solutions) to store their information.
+- **Personal Profile Page**: After login, users are redirected to a personal page where they can add/edit their name, last name, phone number, and email.
+- **Sidebar Navigation**: The personal page includes a sidebar with a button to navigate to the main voice chat page.
+- **Main Voice Chat Page**: The core feature, modeled after https://test-6afed.web.app/, allows real-time voice chat. Users must grant microphone access.
+
+# User Experience  
+- **User Personas**: Individuals seeking real-time voice communication via web.
+- **Key User Flows**:
+  1. Visit landing page → Sign up/log in (email or Google)
+  2. Redirect to personal profile page → Add/edit personal info
+  3. Use sidebar to navigate to main voice chat page
+  4. Grant microphone access → Start real-time voice chat
+- **UI/UX Considerations**: Clean, modern design. Easy navigation. Clear prompts for microphone access and authentication.
+</context>
+<PRD>
+# Technical Architecture  
+- **System Components**:
+  - Next.js frontend (React, TypeScript)
+  - Firebase Authentication (email/password, Google)
+  - Firebase Realtime Database or Firestore for user data (SQL-like structure)
+  - Voice chat interface (WebRTC or similar, integrated with Firebase for signaling if needed)
+- **Data Models**:
+  - User: { id, name, lastName, email, phoneNumber, authProvider }
+  - Voice session: { sessionId, participants, startTime, ... }
+- **APIs and Integrations**:
+  - Firebase Auth API
+  - Firebase Database/Firestore API
+  - WebRTC APIs for voice
+- **Infrastructure Requirements**:
+  - Firebase project setup (Auth, Database/Firestore)
+  - Hosting via Firebase or Vercel
+
+# Development Roadmap  
+- **MVP Requirements**:
+  1. Landing page
+  2. User authentication (email/password, Google)
+  3. Personal profile page with editable info
+  4. Sidebar navigation
+  5. Main voice chat page (microphone access, real-time chat)
+- **Future Enhancements**:
+  - Group voice chat
+  - User avatars
+  - Chat history
+  - Push notifications
+
+# Logical Dependency Chain
+1. Set up Firebase project and Next.js app
+2. Implement landing page
+3. Implement authentication (email/password, Google)
+4. Redirect to personal profile page after login
+5. Implement personal info editing and storage in Firebase
+6. Add sidebar navigation
+7. Implement main voice chat page (modeled after https://test-6afed.web.app/)
+
+# Risks and Mitigations  
+- **Technical challenges**: Real-time voice chat integration (mitigate by using proven libraries like WebRTC)
+- **MVP definition**: Focus on core flows before enhancements
+- **Resource constraints**: Use Firebase for rapid backend setup
+
+# Appendix  
+- Reference: [Realtime Voice Agent Demo](https://test-6afed.web.app/)
+- Firebase documentation
+- WebRTC documentation
+</PRD> 

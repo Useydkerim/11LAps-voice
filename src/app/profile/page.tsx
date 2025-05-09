@@ -7,6 +7,7 @@ import { app } from '@/lib/firebase';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Select from 'react-select';
+import SidebarNav from '@/components/SidebarNav';
 
 // Country data: flag, name, code
 const COUNTRY_OPTIONS = [
@@ -173,46 +174,7 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen flex flex-row items-stretch justify-center bg-gradient-to-br from-blue-50 to-purple-100 px-0 md:px-4">
-      {/* Toast Popup */}
-      {showToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-2 rounded shadow-lg z-50 animate-fade-in">
-          Profile saved!
-        </div>
-      )}
-      {/* Sidebar */}
-      <aside className="hidden md:flex flex-col w-56 bg-white/90 border-r border-gray-200 py-8 px-4 min-h-screen items-center">
-        <div className="mb-8 flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden border-2 border-purple-300">
-            <img
-              src={previewURL || form.photoURL || DEFAULT_AVATAR}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="mt-2 font-semibold text-gray-700 text-center truncate w-full max-w-[120px]">
-            {form.name || 'User'}
-          </div>
-        </div>
-        <nav className="flex flex-col gap-2 w-full">
-          <button className="w-full text-left px-4 py-2 rounded bg-purple-100 text-purple-700 font-semibold cursor-default">Profile</button>
-          <button
-            className="w-full text-left px-4 py-2 rounded hover:bg-blue-100 text-blue-700 font-semibold"
-            onClick={() => router.push('/voice')}
-          >
-            Voice Chat
-          </button>
-          <button
-            className="w-full text-left px-4 py-2 rounded border border-red-200 text-red-600 font-semibold mt-8 hover:bg-red-50 transition"
-            onClick={async () => {
-              await signOut(auth);
-              router.replace('/home');
-            }}
-          >
-            Sign Out
-          </button>
-        </nav>
-      </aside>
-      {/* Main Content */}
+      <SidebarNav user={{ name: form.name, photoURL: previewURL || form.photoURL }} active="profile" />
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8 mt-8">
           <div className="flex flex-col items-center mb-6 md:hidden">

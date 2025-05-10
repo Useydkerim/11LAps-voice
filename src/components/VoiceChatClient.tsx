@@ -138,7 +138,7 @@ export default function VoiceChatClient() {
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            Voice Chat tttt
+            Voice Chat
             <div className="flex gap-2">
               <Button
                 variant="outline"
